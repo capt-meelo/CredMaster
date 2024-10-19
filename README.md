@@ -33,9 +33,7 @@ For detection tips, see the blogpost and detection section.
 ![general](https://raw.githubusercontent.com/whynotsecurity/whynotsecurity.github.io/master/assests/images/credmaster-screenshots/credmaster-default.png)
 
 
-## Quick Use ##
-
-The following plugins are currently supported:
+## Plugins ##
 
 ### Enum ###
 
@@ -75,7 +73,8 @@ These plugins (prefixed with `spray_`) are used to perform password spraying.
 * [PingFed](https://github.com/knavesec/CredMaster/wiki/PingFed) - Ping Federated Authentication
   * `--plugin spray_pingfed`
 
-Example Use:
+## Example Use ##
+
 ```
 python3 credmaster.py --plugin {pluginname} --access_key {key} --secret_access_key {key} -u userfile -p passwordfile -a useragentfile {otherargs}
 ```
