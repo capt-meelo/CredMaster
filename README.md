@@ -37,37 +37,43 @@ For detection tips, see the blogpost and detection section.
 
 The following plugins are currently supported:
 
-* [OWA](https://github.com/knavesec/CredMaster/wiki/OWA) - Outlook Web Access
-  * `--plugin owa`
-* [EWS](https://github.com/knavesec/CredMaster/wiki/EWS) - Exchange Web Services
-  * `--plugin ews`
-* [O365](https://github.com/knavesec/CredMaster/wiki/O365) - Office365 - DEPRECATED
-  * `plugin removed`
-* [ADFS](https://github.com/knavesec/CredMaster/wiki/ADFS) - Active Directory Federation Services
-  * `--plugin adfs`
-* [O365Enum](https://github.com/knavesec/CredMaster/wiki/O365Enum) - Office365 User Enum (No Authentication Request)
-  * `--plugin o365enum`
-* [MSOL](https://github.com/knavesec/CredMaster/wiki/MSOL) - Microsoft Online
-  * `--plugin msol`
-* [MSGraph](https://github.com/knavesec/CredMaster/wiki/MSGraph) - MSGraph Module, msgraph spray point for azure and MSOL credentials
-  * `--plugin msgraph`
-* [AzureSSO](https://github.com/knavesec/CredMaster/wiki/AzureSSO) - Azure AD Seamless SSO Endpoint
-  * `--plugin azuresso`
-* [AzVault](https://github.com/knavesec/CredMaster/wiki/AzureVault) - AzVault Module, Azure spray point different to MSOL/AzureSSO
-  * `--plugin azvault`
-* [Okta](https://github.com/knavesec/CredMaster/wiki/Okta) - Okta Authentication Portal
-  * `--plugin okta`
-* [FortinetVPN](https://github.com/knavesec/CredMaster/wiki/FortinetVPN) - Fortinet VPN Client
-  * `--plugin fortinetvpn`
-* [HTTPBrute](https://github.com/knavesec/CredMaster/wiki/HTTPBrute) - Generic HTTP Brute Methods (Basic/Digest/NTLM)
-  * `--plugin httpbrute`
-* [GMailEnum](https://github.com/knavesec/CredMaster/wiki/GmailEnum) - GSuite/Gmail enumeration
-  * `--plugin gmailenum`
-* [PingFed](https://github.com/knavesec/CredMaster/wiki/PingFed) - Ping Federated Authentication
-  * `--plugin pingfed`
-* [HTTPPost](https://github.com/knavesec/CredMaster/wiki/HTTPPost) - Generic HTTP POST with custom body and headers
-  * `--plugin httppost`
+### Enum ###
 
+These plugins (prefixed with `enum_`) are used to perform user enumeration, wherein no authentication request is sent to target URL. 
+
+* [GMail](https://github.com/knavesec/CredMaster/wiki/GmailEnum) - Gmail User Enumeration
+  * `--plugin enum_gmail`
+* [O365](https://github.com/knavesec/CredMaster/wiki/O365Enum) - Office365 User Enumeration
+  * `--plugin enum_o365`
+
+### Spray ###
+
+These plugins (prefixed with `spray_`) are used to perform password spraying. 
+
+* [ADFS](https://github.com/knavesec/CredMaster/wiki/ADFS) - Active Directory Federation Services
+  * `--plugin spray_adfs`
+* [AzureSSO](https://github.com/knavesec/CredMaster/wiki/AzureSSO) - Azure AD Seamless SSO Endpoint
+  * `--plugin spray_azuresso`
+* [AzVault](https://github.com/knavesec/CredMaster/wiki/AzureVault) - AzVault Module, Azure spray point different to MSOL/AzureSSO
+  * `--plugin spray_azvault`
+* [EWS](https://github.com/knavesec/CredMaster/wiki/EWS) - Exchange Web Services
+  * `--plugin spray_ews`
+* [FortinetVPN](https://github.com/knavesec/CredMaster/wiki/FortinetVPN) - Fortinet VPN Client
+  * `--plugin spray_fortinetvpn`
+* [HTTPBrute](https://github.com/knavesec/CredMaster/wiki/HTTPBrute) - Generic HTTP Brute Methods (Basic/Digest/NTLM)
+  * `--plugin spray_httpbrute`
+* [HTTPPost](https://github.com/knavesec/CredMaster/wiki/HTTPPost) - Generic HTTP POST with custom body and headers
+  * `--plugin spray_httppost`
+* [MSGraph](https://github.com/knavesec/CredMaster/wiki/MSGraph) - MSGraph Module, msgraph spray point for azure and MSOL credentials
+  * `--plugin spray_msgraph`
+* [MSOL](https://github.com/knavesec/CredMaster/wiki/MSOL) - Microsoft Online
+  * `--plugin spray_msol`
+* [Okta](https://github.com/knavesec/CredMaster/wiki/Okta) - Okta Authentication Portal
+  * `--plugin spray_okta`
+* [OWA](https://github.com/knavesec/CredMaster/wiki/OWA) - Outlook Web Access
+  * `--plugin spray_owa`
+* [PingFed](https://github.com/knavesec/CredMaster/wiki/PingFed) - Ping Federated Authentication
+  * `--plugin spray_pingfed`
 
 Example Use:
 ```

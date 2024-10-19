@@ -3,7 +3,7 @@ import utils.utils as utils
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 
-def okta_authenticate(url, username, password, useragent, pluginargs):
+def spray_okta_authenticate(url, username, password, useragent, pluginargs):
 
     data_response = {
         'result' : None,    # Can be "success", "failure" or "potential"

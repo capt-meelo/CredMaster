@@ -8,7 +8,7 @@ def extract_error(xmlresponse):
   return code.group(1).split(":")[0].strip()
 
 
-def azuresso_authenticate(url, username, password, useragent, pluginargs):
+def spray_azuresso_authenticate(url, username, password, useragent, pluginargs):
 
     data_response = {
         'result' : None,    # Can be "success", "failure" or "potential"

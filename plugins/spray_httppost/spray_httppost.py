@@ -3,7 +3,7 @@ import utils.utils as utils
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 
-def httpbrute_authenticate(url, username, password, useragent, pluginargs):
+def spray_httppost_authenticate(url, username, password, useragent, pluginargs):
 
     data_response = {
         'result' : None,    # Can be "success", "failure" or "potential"
@@ -24,6 +24,12 @@ def httpbrute_authenticate(url, username, password, useragent, pluginargs):
         "X-My-X-Amzn-Trace-Id" : trace_id,
     }
 
+    # Adds content-type to headers before custom headers, so that the user can overwrite it if needed
+    if pluginargs['content-type'] == "form":
+        headers['Content-Type'] = "application/x-www-form-urlencoded"
+    elif pluginargs['content-type'] == "json":
+        headers['Content-Type'] = "application/json"
+
     headers = utils.add_custom_headers(pluginargs, headers)
 
     try:
@@ -32,18 +38,10 @@ def httpbrute_authenticate(url, username, password, useragent, pluginargs):
 
         full_url = f"{url}/{pluginargs['uri']}"
 
-        if pluginargs['auth'] == 'basic':
-            auth = requests.auth.HTTPBasicAuth(username, password)
-            resp = requests.get(url=full_url, auth=auth, verify=False, timeout=30)
+        # Replace {USER} and {PASS} placeholders in the body
+        body = pluginargs['body'].replace("{USER}", username).replace("{PASS}", password)
 
-        elif pluginargs['auth'] == 'digest':
-            auth = requests.auth.HTTPDigestAuth(username, password)
-            resp = requests.get(url=full_url, auth=auth, verify=False, timeout=30)
-
-        else: # NTLM
-            auth = requests_ntlm.HttpNtlmAuth(username, password)
-            resp = requests.get(url=full_url, auth=auth, verify=False, timeout=30)
-
+        resp = requests.post(url=full_url, data=body, headers=headers, verify=False, timeout=30)
 
         if resp.status_code == 200:
             data_response['result'] = "success"
@@ -57,7 +55,6 @@ def httpbrute_authenticate(url, username, password, useragent, pluginargs):
         else: #fail
             data_response['result'] = "potential"
             data_response['output'] = f"[?] UNKNOWN_RESPONSE_CODE: {resp.status_code} => {username}:{password}"
-
 
     except Exception as ex:
         data_response['error'] = True

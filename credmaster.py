@@ -5,17 +5,31 @@ from utils.fire import FireProx
 import utils.utils as utils
 import utils.notify as notify
 
-
 class CredMaster(object):
 
 	def __init__(self, args, pargs):
 
 		self.credentials = { "accounts" : [] }
+		# from https://www.aws-services.info/regions.html (except cn- and gov-)
+		# some regions were commented out because it's giving the error "Unable to load AWS credentials"
 		self.regions = [
-			"us-east-2", "us-east-1","us-west-1","us-west-2","eu-west-3",
-			"ap-northeast-1","ap-northeast-2","ap-south-1",
-			"ap-southeast-1","ap-southeast-2","ca-central-1",
-			"eu-central-1","eu-west-1","eu-west-2","sa-east-1",
+			# "af-south-1",
+			# "ap-east-1",
+			"ap-northeast-1", "ap-northeast-2", "ap-northeast-3",
+			"ap-south-1", "ap-south-2",
+			"ap-southeast-1", "ap-southeast-2", "ap-southeast-3", "ap-southeast-4", "ap-southeast-5",
+			"ca-central-1",
+			"ca-west-1",
+			"eu-central-1", "eu-central-2",
+			"eu-north-1",
+			"eu-south-1", "eu-south-2",
+			"eu-west-1", "eu-west-2", "eu-west-3",
+			"il-central-1",
+			"me-central-1",
+			"me-south-1",
+			"sa-east-1",
+			"us-east-1", "us-east-2",
+			"us-west-1", "us-west-2"
 		]
 
 		self.lock = threading.Lock()
@@ -230,7 +244,7 @@ class CredMaster(object):
 		##
 		pluginargs['thread_count'] = self.thread_count
 
-		self.start_time = datetime.datetime.utcnow()
+		self.start_time = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 		self.log_entry(f"Execution started at: {self.start_time}")
 
 		# Check with plugin to make sure it has the data that it needs
@@ -322,7 +336,7 @@ class CredMaster(object):
 
 					self.weekdaywarrior = int(self.weekdaywarrior)
 					sleep_time = self.ww_calc_next_spray_delay(self.weekdaywarrior)
-					next_time = datetime.datetime.utcnow() + datetime.timedelta(hours=self.weekdaywarrior) + datetime.timedelta(minutes=sleep_time)
+					next_time = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(hours=self.weekdaywarrior) + datetime.timedelta(minutes=sleep_time)
 					self.log_entry(f"Weekday Warrior: sleeping {sleep_time} minutes until {next_time.strftime('%H:%M')} on {spray_days[next_time.weekday()]} in UTC {self.weekdaywarrior}")
 					time.sleep(sleep_time*60)
 
@@ -342,19 +356,19 @@ class CredMaster(object):
 
 				if self.delay is None or len(passwords) == 1 or password == passwords[len(passwords)-1]:
 					if self.userpassfile != None:
-						self.log_entry(f"Completed spray with user-pass file {self.userpassfile} at {datetime.datetime.utcnow()}")
+						self.log_entry(f"Completed spray with user-pass file {self.userpassfile} at {datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)}")
 					elif self.userenum:
-						self.log_entry(f"Completed userenum at {datetime.datetime.utcnow()}")
+						self.log_entry(f"Completed userenum at {datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)}")
 					else:
-						self.log_entry(f"Completed spray with password {password} at {datetime.datetime.utcnow()}")
+						self.log_entry(f"Completed spray with password {password} at {datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)}")
 
 					notify.notify_update(f"Info: Spray complete.", self.notify_obj)
 					continue
 				elif count != self.passwordsperdelay:
-					self.log_entry(f"Completed spray with password {password} at {datetime.datetime.utcnow()}, moving on to next password...")
+					self.log_entry(f"Completed spray with password {password} at {datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)}, moving on to next password...")
 					continue
 				else:
-					self.log_entry(f"Completed spray with password {password} at {datetime.datetime.utcnow()}, sleeping for {self.delay} minutes before next password spray")
+					self.log_entry(f"Completed spray with password {password} at {datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)}, sleeping for {self.delay} minutes before next password spray")
 					self.log_entry(f"Valid credentials discovered: {len(self.results)}")
 					for success in self.results:
 						self.log_entry(f"Valid: {success['username']}:{success['password']}")
@@ -376,7 +390,7 @@ class CredMaster(object):
 				self.log_entry("Second KeyboardInterrupt detected, unable to clean up APIs :( try the --clean option")
 
 		# Capture duration
-		self.end_time = datetime.datetime.utcnow()
+		self.end_time = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 		self.time_lapse = (self.end_time-self.start_time).total_seconds()
 
 		# Print stats
@@ -510,7 +524,7 @@ class CredMaster(object):
 	def spray_thread(self, api_key, api_dict, pluginargs):
 
 		try:
-			plugin_authentiate = getattr(importlib.import_module(f"plugins.{self.plugin}.{self.plugin}"), f"{self.plugin}_authenticate")
+			plugin_authenticate = getattr(importlib.import_module(f"plugins.{self.plugin}.{self.plugin}"), f"{self.plugin}_authenticate")
 		except Exception as ex:
 			self.log_entry("Error: Failed to import plugin with exception")
 			self.log_entry(f"Error: {ex}")
@@ -535,7 +549,7 @@ class CredMaster(object):
 						self.jitter_min = 0
 					time.sleep(random.randint(self.jitter_min,self.jitter))
 
-				response = plugin_authentiate(api_dict["proxy_url"], cred["username"], cred["password"], cred["useragent"], pluginargs)
+				response = plugin_authenticate(api_dict["proxy_url"], cred["username"], cred["password"], cred["useragent"], pluginargs)
 
 				# if "debug" in response.keys():
 				# 	print(response["debug"])
@@ -629,7 +643,7 @@ class CredMaster(object):
 
 		spray_times = [8,12,14] # launch sprays at 7AM, 11AM and 3PM
 
-		now = datetime.datetime.utcnow() + datetime.timedelta(hours=offset)
+		now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(hours=offset)
 		hour_cur = int(now.strftime("%H"))
 		minutes_cur = int(now.strftime("%M"))
 		day_cur = int(now.weekday())
@@ -675,7 +689,7 @@ class CredMaster(object):
 
 		self.lock.acquire()
 
-		ts = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+		ts = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 		print(f"[{ts}] {entry}")
 
 		if self.outfile is not None:

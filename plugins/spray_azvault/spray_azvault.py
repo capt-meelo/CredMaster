@@ -8,7 +8,7 @@ def extract_error(desc):
     return desc.split(":")[0].strip()
 
 
-def azvault_authenticate(url, username, password, useragent, pluginargs):
+def spray_azvault_authenticate(url, username, password, useragent, pluginargs):
 
     data_response = {
         'result' : None,    # Can be "success", "failure" or "potential"
